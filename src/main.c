@@ -14,7 +14,7 @@
 
 int main() {
     const char *outfile = "out.jpg";
-	int xsz = 4096, ysz = 4096;
+	int xsz = 1920, ysz = 1920;
 	struct img_pixmap img;
 
     img_init(&img);
@@ -28,7 +28,7 @@ int main() {
     pix = img.pixels;
     for(int y = 0; y < ysz; y++) {
         for(int x = 0; x < xsz; x++) {
-            double complex c = calculate_complex(y, x, xsz, ysz);
+            double complex c = calculate_complex(x, y, xsz, ysz);
             calculate_pixel(c, &pix);
         }
     }
@@ -67,13 +67,15 @@ void calculate_pixel(double complex c, unsigned char **pix) {
         }
         
         number_of_iterations++;
-        z = z*z+c;
+        z = z * z + c;
     }
     if(number_of_iterations == N) {
         set_black_and_increment(pix);
     }
 }
 
-double complex calculate_complex(double i, double j, double xsz, double ysz) {
-    return (RE_START + (i / xsz) * (RE_END - RE_START)) + ((IM_START + (j / ysz) * (IM_END - IM_START)) * I);
+double complex calculate_complex(double x, double y, double xsz, double ysz) {
+    const double xi = (RE_START + (x / xsz) * (RE_END - RE_START));
+    const double yi = (IM_START + (y / ysz) * (IM_END - IM_START));
+    return xi + yi * I;
 }

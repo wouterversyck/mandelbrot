@@ -7,10 +7,14 @@
 #include "includes.h"
 
 #define N 1000
+#define RE_START -2.0
+#define RE_END -0.0
+#define IM_START -1.5
+#define IM_END 1.5
 
 int main() {
     const char *outfile = "out.jpg";
-	int xsz = 2048, ysz = 2048;
+	int xsz = 4096, ysz = 4096;
 	struct img_pixmap img;
 
     img_init(&img);
@@ -24,7 +28,7 @@ int main() {
     pix = img.pixels;
     for(int y = 0; y < ysz; y++) {
         for(int x = 0; x < xsz; x++) {
-            double complex c = calculate_complex(y, x, xsz + 1000, ysz + 1000);
+            double complex c = calculate_complex(y, x, xsz, ysz);
             calculate_pixel(c, &pix);
         }
     }
@@ -39,43 +43,37 @@ int main() {
 }
 
 void set_black_and_increment(unsigned char **pix) {
-    set_and_increment(pix, 0, 0, 0);
+    set_and_increment(pix, BLACK);
 }
 
 void set_white_and_increment(unsigned char **pix) {
-    set_and_increment(pix, 255, 255, 255);
+    set_and_increment(pix, WHITE);
 }
 
-void set_and_increment(unsigned char **pix, unsigned char r, unsigned char g, unsigned char b) {
-    *(*pix)++ = r;
-    *(*pix)++ = g;
-    *(*pix)++ = b;
+void set_and_increment(unsigned char **pix, struct Color color) {
+    *(*pix)++ = color.r;
+    *(*pix)++ = color.g;
+    *(*pix)++ = color.b;
 }
 
 void calculate_pixel(double complex c, unsigned char **pix) {
-    
     double complex z = 0.0;
+    int number_of_iterations = 0;
 
     for(int n = 0; n < N; n++) {
-        if(cabs(z) > 50) {
-            set_and_increment(pix, 125, 70, 25);
-            goto label;
-        }
-        if(cabs(z) > 10) {
-            set_and_increment(pix, 58, 70, 125);
-            goto label;
-        }
-        if(cabs(z) > 4) {
-            set_white_and_increment(pix);
-            goto label;
+        if(cabs(z) > 100) {
+            set_and_increment(pix, colors[n % n_colors]);
+            break;
         }
         
+        number_of_iterations++;
         z = z*z+c;
     }
-    set_black_and_increment(pix);
-    label:{};
+    if(number_of_iterations == N) {
+        set_black_and_increment(pix);
+    }
 }
 
-double complex calculate_complex(int i, int j, int xsz, int ysz) {
-    return (double)i / xsz + (double)j / ysz * I;
+double complex calculate_complex(double i, double j, double xsz, double ysz) {
+    return (RE_START + (i / xsz) * (RE_END - RE_START)) + ((IM_START + (j / ysz) * (IM_END - IM_START)) * I);
 }

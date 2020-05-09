@@ -52,8 +52,8 @@ struct Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2
 
 int main() {
     const char *outfile = "out.jpg";
-	struct Resolution resolution = FULL_HD;
-	struct img_pixmap img;
+    struct Resolution resolution = FULL_HD;
+    struct img_pixmap img;
 
     img_init(&img);
 
@@ -76,7 +76,7 @@ int main() {
     print_end();
 
     printf("Saving image\n");
-    
+
     if(img_save(&img, outfile) == -1) {
         fprintf(stderr, "failed to save file %s\n", outfile);
         return 1;

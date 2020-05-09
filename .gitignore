@@ -2,3 +2,4 @@ mandelbrot
 debug
 *.jpg
 *.o
+.vscode/*

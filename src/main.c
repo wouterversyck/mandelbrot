@@ -7,28 +7,63 @@
 #include "includes.h"
 
 #define N 1000
-#define RE_START -2.0
-#define RE_END -0.0
-#define IM_START -1.5
-#define IM_END 1.5
+/* Normal full mandelbrot region
+#define Y_START -1.0
+#define Y_END 1.0
+#define X_START -2.5
+#define X_END 0.9
+*/
+/* cool region */
+#define Y_START 0.2365
+#define Y_END 0.2555
+#define X_START -0.738
+#define X_END -0.706
+
+
+const struct Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
+const struct Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
+const struct Color YELLOW_1 = { .r = 241, .g = 233, .b = 191 };
+const struct Color BROWN_4 = { .r = 66, .g = 30, .b = 15 };
+const struct Color BROWN_3 = { .r = 106, .g = 52, .b = 3 };
+const struct Color BROWN_2 = { .r = 153, .g = 87, .b = 0 };
+const struct Color BROWN_1 = { .r = 204, .g = 128, .b = 0 };
+const struct Color DARK_VIOLET = { .r = 25, .g = 7, .b = 26 };
+const struct Color BLUE_7 = { .r = 9, .g = 1, .b = 47 };
+const struct Color BLUE_6 = { .r = 4, .g = 4, .b = 73 };
+const struct Color BLUE_5 = { .r = 0, .g = 7, .b = 100 };
+const struct Color BLUE_4 = { .r = 12, .g = 44, .b = 138 };
+const struct Color BLUE_3 = { .r = 24, .g = 82, .b = 177 };
+const struct Color BLUE_2 = { .r = 57, .g = 125, .b = 209 };
+const struct Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
+const struct Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
+const struct Color BLACK = { .r = 0, .g = 0, .b = 0 };
+
+const struct Resolution EIGHT_K = { .x = 7680, .y = 4320 };
+const struct Resolution FOUR_K = { .x = 3840, .y = 2160 };
+const struct Resolution FULL_HD = { .x = 1920, .y = 1080 };
+
+struct Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0, BLACK};
+
+#define n_colors sizeof(colors) / sizeof(struct Color)
+
 
 int main() {
     const char *outfile = "out.jpg";
-	int xsz = 1920, ysz = 1920;
+	struct Resolution resolution = EIGHT_K;
 	struct img_pixmap img;
 
     img_init(&img);
 
-    if(img_set_pixels(&img, xsz, ysz, IMG_FMT_RGB24, 0) == -1) {
+    if(img_set_pixels(&img, resolution.x, resolution.y, IMG_FMT_RGB24, 0) == -1) {
         perror("The what!!!");
         return 1;
     }
 
     unsigned char *pix;
     pix = img.pixels;
-    for(int y = 0; y < ysz; y++) {
-        for(int x = 0; x < xsz; x++) {
-            double complex c = calculate_complex(x, y, xsz, ysz);
+    for(int y = 0; y < resolution.y; y++) {
+        for(int x = 0; x < resolution.x; x++) {
+            double complex c = calculate_complex(x, y, resolution.x, resolution.y);
             calculate_pixel(c, &pix);
         }
     }
@@ -46,10 +81,6 @@ void set_black_and_increment(unsigned char **pix) {
     set_and_increment(pix, BLACK);
 }
 
-void set_white_and_increment(unsigned char **pix) {
-    set_and_increment(pix, WHITE);
-}
-
 void set_and_increment(unsigned char **pix, struct Color color) {
     *(*pix)++ = color.r;
     *(*pix)++ = color.g;
@@ -61,7 +92,7 @@ void calculate_pixel(double complex c, unsigned char **pix) {
     int number_of_iterations = 0;
 
     for(int n = 0; n < N; n++) {
-        if(cabs(z) > 100) {
+        if(cabs(z) > 2) {
             set_and_increment(pix, colors[n % n_colors]);
             break;
         }
@@ -75,7 +106,7 @@ void calculate_pixel(double complex c, unsigned char **pix) {
 }
 
 double complex calculate_complex(double x, double y, double xsz, double ysz) {
-    const double xi = (RE_START + (x / xsz) * (RE_END - RE_START));
-    const double yi = (IM_START + (y / ysz) * (IM_END - IM_START));
+    const double xi = (X_START + (x / xsz) * (X_END - X_START));
+    const double yi = (Y_START + (y / ysz) * (Y_END - Y_START));
     return xi + yi * I;
 }

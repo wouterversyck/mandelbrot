@@ -1,24 +1,25 @@
 #include <stdio.h>
 #include <imago2.h>
 #include <complex.h>
-#include <math.h>
-#include <stdlib.h>
+#include <time.h>
 
 #include "includes.h"
 
 #define N 1000
-/* Normal full mandelbrot region
+/* MAKE SURE THEY ARE AL IN A 1.7 RATIO */
+/* Normal full mandelbrot region */
 #define Y_START -1.0
 #define Y_END 1.0
 #define X_START -2.5
 #define X_END 0.9
-*/
+
 /* cool region */
-#define Y_START 0.2365
-#define Y_END 0.2555
+/*
+#define Y_START 0.2305
+#define Y_END 0.2495
 #define X_START -0.738
 #define X_END -0.706
-
+*/
 
 const struct Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const struct Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
@@ -38,6 +39,8 @@ const struct Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
 const struct Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
 const struct Color BLACK = { .r = 0, .g = 0, .b = 0 };
 
+const struct Resolution TT_K = { .x = 30720, .y = 17280 };
+const struct Resolution ST_K = { .x = 15360, .y = 8640 };
 const struct Resolution EIGHT_K = { .x = 7680, .y = 4320 };
 const struct Resolution FOUR_K = { .x = 3840, .y = 2160 };
 const struct Resolution FULL_HD = { .x = 1920, .y = 1080 };
@@ -49,7 +52,7 @@ struct Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2
 
 int main() {
     const char *outfile = "out.jpg";
-	struct Resolution resolution = EIGHT_K;
+	struct Resolution resolution = FULL_HD;
 	struct img_pixmap img;
 
     img_init(&img);
@@ -58,6 +61,8 @@ int main() {
         perror("The what!!!");
         return 1;
     }
+
+    print_start();
 
     unsigned char *pix;
     pix = img.pixels;
@@ -68,13 +73,19 @@ int main() {
         }
     }
 
-	if(img_save(&img, outfile) == -1) {
-		fprintf(stderr, "failed to save file %s\n", outfile);
-		return 1;
-	}
+    print_end();
 
-	img_destroy(&img);
-	return 0;
+    printf("Saving image\n");
+    
+    if(img_save(&img, outfile) == -1) {
+        fprintf(stderr, "failed to save file %s\n", outfile);
+        return 1;
+    }
+
+    printf("Completed\n");
+
+    img_destroy(&img);
+    return 0;
 }
 
 void set_black_and_increment(unsigned char **pix) {
@@ -109,4 +120,20 @@ double complex calculate_complex(double x, double y, double xsz, double ysz) {
     const double xi = (X_START + (x / xsz) * (X_END - X_START));
     const double yi = (Y_START + (y / ysz) * (Y_END - Y_START));
     return xi + yi * I;
+}
+
+void print_start() {
+    printf("Starting at: ");
+    print_time();
+}
+
+void print_end() {
+    printf("Ending at: ");
+    print_time();
+}
+
+void print_time() {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    printf("%02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }

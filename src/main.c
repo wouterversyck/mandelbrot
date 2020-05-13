@@ -21,38 +21,38 @@
 #define X_END -0.706
 */
 
-const struct Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
-const struct Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
-const struct Color YELLOW_1 = { .r = 241, .g = 233, .b = 191 };
-const struct Color BROWN_4 = { .r = 66, .g = 30, .b = 15 };
-const struct Color BROWN_3 = { .r = 106, .g = 52, .b = 3 };
-const struct Color BROWN_2 = { .r = 153, .g = 87, .b = 0 };
-const struct Color BROWN_1 = { .r = 204, .g = 128, .b = 0 };
-const struct Color DARK_VIOLET = { .r = 25, .g = 7, .b = 26 };
-const struct Color BLUE_7 = { .r = 9, .g = 1, .b = 47 };
-const struct Color BLUE_6 = { .r = 4, .g = 4, .b = 73 };
-const struct Color BLUE_5 = { .r = 0, .g = 7, .b = 100 };
-const struct Color BLUE_4 = { .r = 12, .g = 44, .b = 138 };
-const struct Color BLUE_3 = { .r = 24, .g = 82, .b = 177 };
-const struct Color BLUE_2 = { .r = 57, .g = 125, .b = 209 };
-const struct Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
-const struct Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
-const struct Color BLACK = { .r = 0, .g = 0, .b = 0 };
+const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
+const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
+const Color YELLOW_1 = { .r = 241, .g = 233, .b = 191 };
+const Color BROWN_4 = { .r = 66, .g = 30, .b = 15 };
+const Color BROWN_3 = { .r = 106, .g = 52, .b = 3 };
+const Color BROWN_2 = { .r = 153, .g = 87, .b = 0 };
+const Color BROWN_1 = { .r = 204, .g = 128, .b = 0 };
+const Color DARK_VIOLET = { .r = 25, .g = 7, .b = 26 };
+const Color BLUE_7 = { .r = 9, .g = 1, .b = 47 };
+const Color BLUE_6 = { .r = 4, .g = 4, .b = 73 };
+const Color BLUE_5 = { .r = 0, .g = 7, .b = 100 };
+const Color BLUE_4 = { .r = 12, .g = 44, .b = 138 };
+const Color BLUE_3 = { .r = 24, .g = 82, .b = 177 };
+const Color BLUE_2 = { .r = 57, .g = 125, .b = 209 };
+const Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
+const Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
+const Color BLACK = { .r = 0, .g = 0, .b = 0 };
 
-const struct Resolution TT_K = { .x = 30720, .y = 17280 };
-const struct Resolution ST_K = { .x = 15360, .y = 8640 };
-const struct Resolution EIGHT_K = { .x = 7680, .y = 4320 };
-const struct Resolution FOUR_K = { .x = 3840, .y = 2160 };
-const struct Resolution FULL_HD = { .x = 1920, .y = 1080 };
+const Resolution TT_K = { .x = 30720, .y = 17280 };
+const Resolution ST_K = { .x = 15360, .y = 8640 };
+const Resolution EIGHT_K = { .x = 7680, .y = 4320 };
+const Resolution FOUR_K = { .x = 3840, .y = 2160 };
+const Resolution FULL_HD = { .x = 1920, .y = 1080 };
 
-struct Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0, BLACK};
+Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0, BLACK};
 
-#define n_colors sizeof(colors) / sizeof(struct Color)
+#define n_colors sizeof(colors) / sizeof(Color)
 
 
 int main() {
     const char *outfile = "out.jpg";
-    struct Resolution resolution = FULL_HD;
+    Resolution resolution = FULL_HD;
     struct img_pixmap img;
 
     img_init(&img);
@@ -92,7 +92,7 @@ void set_black_and_increment(unsigned char **pix) {
     set_and_increment(pix, BLACK);
 }
 
-void set_and_increment(unsigned char **pix, struct Color color) {
+void set_and_increment(unsigned char **pix, Color color) {
     *(*pix)++ = color.r;
     *(*pix)++ = color.g;
     *(*pix)++ = color.b;

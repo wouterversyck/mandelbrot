@@ -1,3 +1,4 @@
+CC := gcc
 EXE := mandelbrot
 SRC_DIR := src
 OBJ_DIR := obj
@@ -11,7 +12,6 @@ LDLIBS := -limago -lm
 ll: $(EXE)
 $(EXE): $(OBJ)
 	$(CC) $^ $(LDLIBS) -o $@
-	echo "compiled $^"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

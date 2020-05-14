@@ -1,7 +1,8 @@
-#include "includes.h"
+#include <complex.h>
+#include <math.h>
+#include "mandelbrot.h"
 
-
-#define N 1000
+#define N 1000.0
 
 const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
@@ -21,10 +22,61 @@ const Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
 const Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
 const Color BLACK = { .r = 0, .g = 0, .b = 0 };
 
-Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0, BLACK};
+Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0};
 
 #define n_colors sizeof(colors) / sizeof(Color)
 
+Color get_color_sqrt(double n);
+Color get_color(double n);
+Color get_color_from_pallete(double n);
+coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete };
+
+
+
+Color hsv_to_rgb(double H, double S, double V) {
+	double C = S * V;
+	double X = C * (1 - fabs(fmod(H / 60.0, 2) - 1));
+	double m = V - C;
+	double Rs, Gs, Bs;
+
+	if(H >= 0 && H < 60) {
+		Rs = C;
+		Gs = X;
+		Bs = 0;	
+	}
+	else if(H >= 60 && H < 120) {	
+		Rs = X;
+		Gs = C;
+		Bs = 0;	
+	}
+	else if(H >= 120 && H < 180) {
+		Rs = 0;
+		Gs = C;
+		Bs = X;	
+	}
+	else if(H >= 180 && H < 240) {
+		Rs = 0;
+		Gs = X;
+		Bs = C;	
+	}
+	else if(H >= 240 && H < 300) {
+		Rs = X;
+		Gs = 0;
+		Bs = C;	
+	}
+	else {
+		Rs = C;
+		Gs = 0;
+		Bs = X;	
+	}
+	
+    Color c;
+	c.r = (Rs + m) * 255;
+	c.g = (Gs + m) * 255;
+	c.b = (Bs + m) * 255;
+
+    return c;
+}
 
 void set_and_increment(unsigned char **pix, Color color) {
     *(*pix)++ = color.r;
@@ -36,13 +88,35 @@ void set_black_and_increment(unsigned char **pix) {
     set_and_increment(pix, BLACK);
 }
 
-void calculate_pixel(double complex c, unsigned char **pix) {
+// TODO group iteration values into colors
+
+/** 
+ * Sqrt to make lower values grow faster
+ **/
+Color get_color_sqrt(double n) {
+	printf("Sqrt");
+    n = sqrt(n / N);
+    return hsv_to_rgb(360 * n, 1, 1);
+}
+
+Color get_color(double n) {
+    return hsv_to_rgb(360 * n / N, 1, 1);
+}
+
+Color get_color_from_pallete(double n) {
+	return colors[(int)n % n_colors];
+}
+
+void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_action) {
     double complex z = 0.0;
     int number_of_iterations = 0;
 
     for(int n = 0; n < N; n++) {
         if(cabs(z) > 2) {
-            set_and_increment(pix, colors[n % n_colors]);
+			Color c = funcs[color_action](n);
+            //Color c = get_color(n);
+            // Color c = get_color_from_pallete(n);
+            set_and_increment(pix, c);
             break;
         }
         
@@ -60,12 +134,11 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
     return xi + yi * I;
 }
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char **pix) {
+void create_mandelbrot(Resolution resolution, Region region, unsigned char **pix, ColorAction action) {
     for(int y = 0; y < resolution.y; y++) {
         for(int x = 0; x < resolution.x; x++) {
             double complex c = calculate_complex(x, y, resolution, region);
-            calculate_pixel(c, pix);
+            calculate_pixel(c, pix, action);
         }
     }
 }
-

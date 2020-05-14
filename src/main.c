@@ -3,7 +3,6 @@
 #include <complex.h>
 #include <time.h>
 
-#include "includes.h"
 #include "mandelbrot.h"
 
 
@@ -35,7 +34,11 @@ void print_end() {
 
 int main() {
     const char *outfile = "out.jpg";
+    
     Resolution resolution = FULL_HD;
+    ColorAction action = Count;
+    Region region = COOL_VIEW;
+
     struct img_pixmap img;
 
     img_init(&img);
@@ -47,10 +50,8 @@ int main() {
 
     print_start();
 
-    unsigned char *pix;
-    pix = img.pixels;
-    
-    create_mandelbrot(resolution, COOL_VIEW, &pix);
+    unsigned char *pix = img.pixels;
+    create_mandelbrot(resolution, region, &pix, action);
 
     print_end();
 

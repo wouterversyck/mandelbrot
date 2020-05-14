@@ -12,8 +12,8 @@ const Resolution EIGHT_K = { .x = 7680, .y = 4320 };
 const Resolution FOUR_K = { .x = 3840, .y = 2160 };
 const Resolution FULL_HD = { .x = 1920, .y = 1080 };
 
-const Region FULL_VIEW = { .y_start = -1.0, .y_end = 1.0, .x_start = -2.5, .x_end = 0.9 };
-const Region COOL_VIEW = { .y_start = 0.2305, .y_end = 0.2495, .x_start = -0.738, .x_end = -0.706 };
+const Region REGION_FULL = { .y_start = -1.0, .y_end = 1.0, .x_start = -2.5, .x_end = 0.9 };
+const Region REGION_COOL = { .y_start = 0.2305, .y_end = 0.2495, .x_start = -0.738, .x_end = -0.706 };
 
 
 void print_time() {
@@ -36,8 +36,8 @@ int main() {
     const char *outfile = "out.jpg";
     
     Resolution resolution = FULL_HD;
-    ColorAction action = Count;
-    Region region = COOL_VIEW;
+    ColorAction action = CONTINUOUS;
+    Region region = REGION_COOL;
 
     struct img_pixmap img;
 

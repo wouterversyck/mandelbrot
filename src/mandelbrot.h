@@ -1,6 +1,8 @@
 #ifndef _MANDELBROT_H
 #define _MANDELBROT_H	1
 
+#include <complex.h>
+
 
 typedef struct color_struct {
     unsigned char r;
@@ -22,11 +24,12 @@ typedef struct region_struct {
 
 typedef enum {
     SQRT,
-    Count,
-    PALETTE
+    COUNT,
+    PALETTE,
+    CONTINUOUS
 } ColorAction;
 
-typedef Color (*coloring)(double n);
+typedef Color (*coloring)(double n, double complex z);
 
 void create_mandelbrot(Resolution resolution, Region region, unsigned char **pix, ColorAction action);
 

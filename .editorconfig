@@ -1,0 +1,8 @@
+# 4 space indentation
+[*.{c,h}]
+indent_style = space
+indent_size = 4
+
+# Tab indentation (no size specified)
+[makefile]
+indent_style = tab

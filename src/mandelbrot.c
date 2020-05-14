@@ -22,7 +22,7 @@ const Color BLUE_1 = { .r = 134, .g = 181, .b = 229 };
 const Color BLUE_0 = { .r = 211, .g = 236, .b = 248 };
 const Color BLACK = { .r = 0, .g = 0, .b = 0 };
 
-Color colors[] = {YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0};
+Color colors[] = { YELLOW_3, YELLOW_2, YELLOW_1, BROWN_4, BROWN_3, BROWN_2, BROWN_1, DARK_VIOLET, BLUE_7, BLUE_6, BLUE_5, BLUE_4, BLUE_3, BLUE_2, BLUE_1, BLUE_0 };
 
 #define n_colors sizeof(colors) / sizeof(Color)
 
@@ -35,46 +35,46 @@ coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_
 
 
 Color hsv_to_rgb(double H, double S, double V) {
-	double C = S * V;
-	double X = C * (1 - fabs(fmod(H / 60.0, 2) - 1));
-	double m = V - C;
-	double Rs, Gs, Bs;
+    double C = S * V;
+    double X = C * (1 - fabs(fmod(H / 60.0, 2) - 1));
+    double m = V - C;
+    double Rs, Gs, Bs;
 
-	if(H >= 0 && H < 60) {
-		Rs = C;
-		Gs = X;
-		Bs = 0;	
-	}
-	else if(H >= 60 && H < 120) {	
-		Rs = X;
-		Gs = C;
-		Bs = 0;	
-	}
-	else if(H >= 120 && H < 180) {
-		Rs = 0;
-		Gs = C;
-		Bs = X;	
-	}
-	else if(H >= 180 && H < 240) {
-		Rs = 0;
-		Gs = X;
-		Bs = C;	
-	}
-	else if(H >= 240 && H < 300) {
-		Rs = X;
-		Gs = 0;
-		Bs = C;	
-	}
-	else {
-		Rs = C;
-		Gs = 0;
-		Bs = X;	
-	}
-	
+    if(H >= 0 && H < 60) {
+        Rs = C;
+        Gs = X;
+        Bs = 0;	
+    }
+    else if(H >= 60 && H < 120) {	
+        Rs = X;
+        Gs = C;
+        Bs = 0;	
+    }
+    else if(H >= 120 && H < 180) {
+        Rs = 0;
+        Gs = C;
+        Bs = X;	
+    }
+    else if(H >= 180 && H < 240) {
+        Rs = 0;
+        Gs = X;
+        Bs = C;	
+    }
+    else if(H >= 240 && H < 300) {
+        Rs = X;
+        Gs = 0;
+        Bs = C;	
+    }
+    else {
+        Rs = C;
+        Gs = 0;
+        Bs = X;	
+    }
+
     Color c;
-	c.r = (Rs + m) * 255;
-	c.g = (Gs + m) * 255;
-	c.b = (Bs + m) * 255;
+    c.r = (Rs + m) * 255;
+    c.g = (Gs + m) * 255;
+    c.b = (Bs + m) * 255;
 
     return c;
 }
@@ -95,20 +95,20 @@ void set_black_and_increment(unsigned char **pix) {
  * Log is used to smooth out the edges
  **/
 Color get_color_sqrt(double n, double complex z) {
-	n = n + 1 - log(log2(cabs(z)));
+    n = n + 1 - log(log2(cabs(z)));
     n = sqrt(n / N);
     return hsv_to_rgb(360 * n, 1, 1);
 }
 
 Color get_color_continuous(double n, double complex z) {
-	double continuous_index = n + 1 - log(log2(cabs(z)));
+    double continuous_index = n + 1 - log(log2(cabs(z)));
 
-	Color c;
-	c.r = (sin(0.016 * continuous_index + 4) * 127.5 + 127.5);
-	c.g = (sin(0.013 * continuous_index + 2) * 127.5 + 127.5);
-	c.b = (sin(0.01 * continuous_index + 1) * 127.5 + 127.5);
-	
-	return c;
+    Color c;
+    c.r = (sin(0.016 * continuous_index + 4) * 127.5 + 127.5);
+    c.g = (sin(0.013 * continuous_index + 2) * 127.5 + 127.5);
+    c.b = (sin(0.01 * continuous_index + 1) * 127.5 + 127.5);
+
+    return c;
 }
 
 Color get_color(double n, double complex z) {
@@ -116,7 +116,7 @@ Color get_color(double n, double complex z) {
 }
 
 Color get_color_from_pallete(double n, double complex z) {
-	return colors[(int)n % n_colors];
+    return colors[(int)n % n_colors];
 }
 
 void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_action) {
@@ -125,7 +125,7 @@ void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_ac
 
     for(int n = 0; n < N; n++) {
         if(cabs(z) > 2) {
-			Color c = funcs[color_action](n, z);
+            Color c = funcs[color_action](n, z);
             set_and_increment(pix, c);
             break;
         }

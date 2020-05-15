@@ -7,7 +7,7 @@ SRC := $(wildcard $(SRC_DIR)/*)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 CFLAGS := #-Wall -Werror -Wextra
-LDLIBS := -limago -lm
+LDLIBS := -limago -lm -lpthread
 
 ll: $(EXE)
 $(EXE): $(OBJ)

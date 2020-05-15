@@ -1,8 +1,13 @@
 #include <complex.h>
 #include <math.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "mandelbrot.h"
 
 #define N 1000.0
+#define N_THREADS 4
 
 const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
@@ -32,6 +37,13 @@ Color get_color_from_pallete(double n, double complex z);
 Color get_color_continuous(double n, double complex z);
 coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
 
+typedef struct thread_args_struct {
+    Resolution resolution;
+    WorkPart x_y;
+    Region region;
+    unsigned char *pix;
+    ColorAction action;
+} ThreadArgs;
 
 
 Color hsv_to_rgb(double H, double S, double V) {
@@ -79,16 +91,6 @@ Color hsv_to_rgb(double H, double S, double V) {
     return c;
 }
 
-void set_and_increment(unsigned char **pix, Color color) {
-    *(*pix)++ = color.r;
-    *(*pix)++ = color.g;
-    *(*pix)++ = color.b;
-}
-
-void set_black_and_increment(unsigned char **pix) {
-    set_and_increment(pix, BLACK);
-}
-
 
 /** 
  * Sqrt to make lower values grow faster
@@ -119,14 +121,25 @@ Color get_color_from_pallete(double n, double complex z) {
     return colors[(int)n % n_colors];
 }
 
-void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_action) {
+void set_and_increment(unsigned char *pix, Color color, Point point) {
+    pix[point.x + point.y] = color.r;
+    pix[point.x + point.y + 1] = color.g;
+    pix[point.x + point.y + 2] = color.b;
+    
+}
+
+void set_black_and_increment(unsigned char *pix, Point point) {
+    set_and_increment(pix, BLACK, point);
+}
+
+void calculate_pixel(double complex c, unsigned char *pix, ColorAction color_action, Point point) {
     double complex z = 0.0;
     int number_of_iterations = 0;
 
     for(int n = 0; n < N; n++) {
         if(cabs(z) > 2) {
             Color c = funcs[color_action](n, z);
-            set_and_increment(pix, c);
+            set_and_increment(pix, c, point);
             break;
         }
         
@@ -134,7 +147,7 @@ void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_ac
         z = z * z + c;
     }
     if(number_of_iterations == N) {
-        set_black_and_increment(pix);
+        set_black_and_increment(pix, point);
     }
 }
 
@@ -144,11 +157,81 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
     return xi + yi * I;
 }
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char **pix, ColorAction action) {
-    for(int y = 0; y < resolution.y; y++) {
-        for(int x = 0; x < resolution.x; x++) {
-            double complex c = calculate_complex(x, y, resolution, region);
-            calculate_pixel(c, pix, action);
+void *do_work(void *input) {
+    ThreadArgs args = *(ThreadArgs*)input;
+
+    for(int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
+        for(int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
+            Point point = { .x = x, .y = y };
+            double complex c = calculate_complex(x, y, args.resolution, args.region);
+            calculate_pixel(c, args.pix, args.action, point);
         }
     }
+}
+
+void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {
+    ThreadArgs *args1 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+    ThreadArgs *args2 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+    ThreadArgs *args3 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+    ThreadArgs *args4 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+    
+    int steps = resolution.y / 4;
+
+    WorkPart x_y = { .x_start = 0, .x_end = resolution.x, .y_start = 0, .y_end = steps };
+
+    args1->resolution = resolution;
+    args1->region = region;
+    args1->pix = pix;
+    args1->action = action;
+    args1->x_y = x_y;
+    
+
+    x_y.y_start = x_y.y_end + 1;
+    x_y.y_end += steps;
+
+    args2->resolution = resolution;
+    args2->region = region;
+    args2->pix = pix;
+    args2->action = action;
+    args2->x_y = x_y;
+    
+
+    x_y.y_start = x_y.y_end + 1;
+    x_y.y_end += steps;
+
+
+    args3->resolution = resolution;
+    args3->region = region;
+    args3->pix = pix;
+    args3->action = action;
+    args3->x_y = x_y;
+
+    x_y.y_start = x_y.y_end + 1;
+    x_y.y_end += steps;
+
+    args4->resolution = resolution;
+    args4->region = region;
+    args4->pix = pix;
+    args4->action = action;
+    args4->x_y = x_y;
+
+    
+    pthread_t tid;
+    pthread_create(&tid, NULL, do_work, (void *)args1);
+    pthread_t tid2;
+    pthread_create(&tid2, NULL, do_work, (void *)args2);
+    pthread_t tid3;
+    pthread_create(&tid3, NULL, do_work, (void *)args3);
+    pthread_t tid4;
+    pthread_create(&tid4, NULL, do_work, (void *)args4);
+
+    pthread_join(tid, NULL);
+    pthread_join(tid2, NULL);
+    pthread_join(tid3, NULL);
+    pthread_join(tid4, NULL);
+
+    free(args1);
+    free(args2);
+    free(args3);
+    free(args4);
 }

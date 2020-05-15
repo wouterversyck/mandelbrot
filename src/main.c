@@ -51,7 +51,7 @@ int main() {
     print_start();
 
     unsigned char *pix = img.pixels;
-    create_mandelbrot(resolution, region, &pix, action);
+    create_mandelbrot(resolution, region, pix, action);
 
     print_end();
 

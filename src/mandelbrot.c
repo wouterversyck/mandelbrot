@@ -121,25 +121,25 @@ Color get_color_from_pallete(double n, double complex z) {
     return colors[(int)n % n_colors];
 }
 
-void set_and_increment(unsigned char *pix, Color color, Point point) {
-    pix[point.x + point.y] = color.r;
-    pix[point.x + point.y + 1] = color.g;
-    pix[point.x + point.y + 2] = color.b;
+void set_and_increment(unsigned char **pix, Color color) {
+    *(*pix)++ = color.r;
+    *(*pix)++ = color.g;
+    *(*pix)++ = color.b;
     
 }
 
-void set_black_and_increment(unsigned char *pix, Point point) {
-    set_and_increment(pix, BLACK, point);
+void set_black_and_increment(unsigned char **pix) {
+    set_and_increment(pix, BLACK);
 }
 
-void calculate_pixel(double complex c, unsigned char *pix, ColorAction color_action, Point point) {
+void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_action) {
     double complex z = 0.0;
     int number_of_iterations = 0;
 
     for(int n = 0; n < N; n++) {
         if(cabs(z) > 2) {
             Color c = funcs[color_action](n, z);
-            set_and_increment(pix, c, point);
+            set_and_increment(pix, c);
             break;
         }
         
@@ -147,7 +147,7 @@ void calculate_pixel(double complex c, unsigned char *pix, ColorAction color_act
         z = z * z + c;
     }
     if(number_of_iterations == N) {
-        set_black_and_increment(pix, point);
+        set_black_and_increment(pix);
     }
 }
 
@@ -162,9 +162,8 @@ void *do_work(void *input) {
 
     for(int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
         for(int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
-            Point point = { .x = x, .y = y };
             double complex c = calculate_complex(x, y, args.resolution, args.region);
-            calculate_pixel(c, args.pix, args.action, point);
+            calculate_pixel(c, &args.pix, args.action);
         }
     }
 }
@@ -188,6 +187,8 @@ void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix,
 
     x_y.y_start = x_y.y_end + 1;
     x_y.y_end += steps;
+    // multiply by 3 for r,g,b values
+    pix += steps * resolution.x * sizeof(unsigned char) * 3;
 
     args2->resolution = resolution;
     args2->region = region;
@@ -198,6 +199,7 @@ void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix,
 
     x_y.y_start = x_y.y_end + 1;
     x_y.y_end += steps;
+    pix += (steps -1) * resolution.x * sizeof(unsigned char) * 3;
 
 
     args3->resolution = resolution;
@@ -208,6 +210,7 @@ void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix,
 
     x_y.y_start = x_y.y_end + 1;
     x_y.y_end += steps;
+    pix += (steps - 1) * resolution.x * sizeof(unsigned char) * 3;
 
     args4->resolution = resolution;
     args4->region = region;
@@ -215,9 +218,9 @@ void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix,
     args4->action = action;
     args4->x_y = x_y;
 
-    
-    pthread_t tid;
-    pthread_create(&tid, NULL, do_work, (void *)args1);
+
+    pthread_t tid1;
+    pthread_create(&tid1, NULL, do_work, (void *)args1);
     pthread_t tid2;
     pthread_create(&tid2, NULL, do_work, (void *)args2);
     pthread_t tid3;
@@ -225,7 +228,7 @@ void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix,
     pthread_t tid4;
     pthread_create(&tid4, NULL, do_work, (void *)args4);
 
-    pthread_join(tid, NULL);
+    pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
     pthread_join(tid4, NULL);

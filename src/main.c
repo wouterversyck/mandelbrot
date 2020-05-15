@@ -36,8 +36,8 @@ int main() {
     const char *outfile = "out.jpg";
     
     Resolution resolution = FULL_HD;
-    ColorAction action = CONTINUOUS;
-    Region region = REGION_COOL;
+    ColorAction action = SQRT;
+    Region region = REGION_FULL;
 
     struct img_pixmap img;
 

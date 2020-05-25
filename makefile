@@ -1,5 +1,6 @@
 CC := gcc
 EXE := mandelbrot
+DEBUG := debug
 SRC_DIR := src
 OBJ_DIR := obj
 
@@ -8,10 +9,13 @@ OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 CFLAGS := #-Wall -Werror -Wextra
 LDLIBS := -limago -lm -lpthread
+DBFLAGS := -g
 
-ll: $(EXE)
 $(EXE): $(OBJ)
 	$(CC) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(DEBUG): $(SRC_DIR)/*.c
+	$(CC) $(CFLAGS) $(LDLIBS) $^ $(DEBUG) -o $(DEBUG)

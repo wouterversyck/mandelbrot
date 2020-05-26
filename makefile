@@ -7,9 +7,13 @@ OBJ_DIR := obj
 SRC := $(wildcard $(SRC_DIR)/*)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS := #-Wall -Werror -Wextra
+CFLAGS := # -Wall -Werror -Wextra
 LDLIBS := -limago -lm -lpthread
 DBFLAGS := -g
+
+all: $(EXE)
+debug: CFLAGS += $(DBFLAGS)
+debug: $(EXE)
 
 $(EXE): $(OBJ)
 	$(CC) $^ $(LDLIBS) -o $@
@@ -17,5 +21,12 @@ $(EXE): $(OBJ)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(DEBUG): $(SRC_DIR)/*.c
-	$(CC) $(CFLAGS) $(LDLIBS) $^ $(DEBUG) -o $(DEBUG)
+.PHONY: clean
+clean:
+	@echo ''
+	@echo '--------------------'
+	@echo '- Cleaning project -'
+	@echo '--------------------'
+	@echo ''
+	rm -f $(DEBUG) $(EXE)
+	rm -rf obj/*

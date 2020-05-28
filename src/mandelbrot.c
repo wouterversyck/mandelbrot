@@ -97,6 +97,7 @@ Color hsv_to_rgb(double H, double S, double V) {
  * Log is used to smooth out the edges
  **/
 Color get_color_sqrt(double n, double complex z) {
+    (void) z; /* unused */
     n = n + 1 - log(log2(cabs(z)));
     n = sqrt(n / N);
     return hsv_to_rgb(360 * n, 1, 1);
@@ -114,10 +115,12 @@ Color get_color_continuous(double n, double complex z) {
 }
 
 Color get_color(double n, double complex z) {
+    (void) z; /* unused */
     return hsv_to_rgb(360 * n / N, 1, 1);
 }
 
 Color get_color_from_pallete(double n, double complex z) {
+    (void) z; /* unused */
     return colors[(int)n % n_colors];
 }
 
@@ -160,12 +163,13 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
 void *do_work(void *input) {
     ThreadArgs args = *(ThreadArgs*)input;
 
-    for(int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
-        for(int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
+    for(unsigned int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
+        for(unsigned int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
             double complex c = calculate_complex(x, y, args.resolution, args.region);
             calculate_pixel(c, &args.pix, args.action);
         }
     }
+    return NULL;
 }
 
 void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {

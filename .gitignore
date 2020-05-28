@@ -1,5 +1,6 @@
 mandelbrot
 debug
+test
 *.jpg
 *.o
 .vscode/*

@@ -25,9 +25,14 @@ $(EXE): $(OBJ)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+.PHONY: valgrind
+valgrind: $(EXE)
+	valgrind ./mandelbrot --leak-check=full
+
+.PHONY: test
 test: $(SRC_LS) $(TEST_LS)
 	$(CC) $(DBFLAGS) -lcmocka -Wl,--wrap=printf,--wrap=localtime,--wrap=time src/ptime.c tests/ptime.c -o $(TEST)
-	./test
+	./$(TEST)
 
 .PHONY: clean
 clean:

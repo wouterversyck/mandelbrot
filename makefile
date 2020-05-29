@@ -27,7 +27,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 .PHONY: valgrind
 valgrind: $(EXE)
-	valgrind ./mandelbrot --leak-check=full
+	valgrind ./$(EXE) --leak-check=full
 
 .PHONY: test
 test: $(SRC_LS) $(TEST_LS)

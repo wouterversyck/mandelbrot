@@ -3,6 +3,7 @@ EXE := mandelbrot
 DEBUG := debug
 TEST := test
 SRC_DIR := src
+TEST_DIR := tests
 OBJ_DIR := obj
 
 SRC_LS := $(shell ls -d src/*)
@@ -27,12 +28,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 .PHONY: valgrind
 valgrind: $(EXE)
-	valgrind ./$(EXE) --leak-check=full
-
-.PHONY: test
-test: $(SRC_LS) $(TEST_LS)
-	$(CC) $(DBFLAGS) -lcmocka -Wl,--wrap=printf,--wrap=localtime,--wrap=time src/ptime.c tests/ptime.c -o $(TEST)
-	./$(TEST)
+	valgrind --leak-check=full --show-leak-kinds=all ./$(EXE)
 
 .PHONY: clean
 clean:
@@ -43,3 +39,5 @@ clean:
 	@echo ''
 	rm -f $(DEBUG) $(EXE) $(TEST)
 	rm -rf obj/*
+
+include tests/makefile

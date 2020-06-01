@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <imago2.h>
 #include <complex.h>
-#include <time.h>
 
+#include "ptime.h"
 #include "mandelbrot.h"
 
 
@@ -16,28 +16,12 @@ const Region REGION_FULL = { .y_start = -1.0, .y_end = 1.0, .x_start = -2.5, .x_
 const Region REGION_COOL = { .y_start = 0.2305, .y_end = 0.2495, .x_start = -0.738, .x_end = -0.706 };
 
 
-void print_time() {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    printf("%02d:%02d:%02d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
-}
-
-void print_start() {
-    printf("Starting at: ");
-    print_time();
-}
-
-void print_end() {
-    printf("Ending at: ");
-    print_time();
-}
-
 int main() {
     const char *outfile = "out.jpg";
     
     Resolution resolution = FULL_HD;
-    ColorAction action = CONTINUOUS;
-    Region region = REGION_COOL;
+    ColorAction action = SQRT;
+    Region region = REGION_FULL;
 
     struct img_pixmap img;
 
@@ -51,7 +35,7 @@ int main() {
     print_start();
 
     unsigned char *pix = img.pixels;
-    create_mandelbrot(resolution, region, &pix, action);
+    create_mandelbrot(resolution, region, pix, action);
 
     print_end();
 

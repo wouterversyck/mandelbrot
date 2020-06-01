@@ -1,8 +1,13 @@
 #include <complex.h>
 #include <math.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "mandelbrot.h"
 
 #define N 1000.0
+#define N_THREADS 4
 
 const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
@@ -32,6 +37,13 @@ Color get_color_from_pallete(double n, double complex z);
 Color get_color_continuous(double n, double complex z);
 coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
 
+typedef struct thread_args_struct {
+    Resolution resolution;
+    WorkPart x_y;
+    Region region;
+    unsigned char *pix;
+    ColorAction action;
+} ThreadArgs;
 
 
 Color hsv_to_rgb(double H, double S, double V) {
@@ -79,22 +91,13 @@ Color hsv_to_rgb(double H, double S, double V) {
     return c;
 }
 
-void set_and_increment(unsigned char **pix, Color color) {
-    *(*pix)++ = color.r;
-    *(*pix)++ = color.g;
-    *(*pix)++ = color.b;
-}
-
-void set_black_and_increment(unsigned char **pix) {
-    set_and_increment(pix, BLACK);
-}
-
 
 /** 
  * Sqrt to make lower values grow faster
  * Log is used to smooth out the edges
  **/
 Color get_color_sqrt(double n, double complex z) {
+    (void) z; /* unused */
     n = n + 1 - log(log2(cabs(z)));
     n = sqrt(n / N);
     return hsv_to_rgb(360 * n, 1, 1);
@@ -112,11 +115,24 @@ Color get_color_continuous(double n, double complex z) {
 }
 
 Color get_color(double n, double complex z) {
+    (void) z; /* unused */
     return hsv_to_rgb(360 * n / N, 1, 1);
 }
 
 Color get_color_from_pallete(double n, double complex z) {
+    (void) z; /* unused */
     return colors[(int)n % n_colors];
+}
+
+void set_and_increment(unsigned char **pix, Color color) {
+    *(*pix)++ = color.r;
+    *(*pix)++ = color.g;
+    *(*pix)++ = color.b;
+    
+}
+
+void set_black_and_increment(unsigned char **pix) {
+    set_and_increment(pix, BLACK);
 }
 
 void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_action) {
@@ -144,11 +160,49 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
     return xi + yi * I;
 }
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char **pix, ColorAction action) {
-    for(int y = 0; y < resolution.y; y++) {
-        for(int x = 0; x < resolution.x; x++) {
-            double complex c = calculate_complex(x, y, resolution, region);
-            calculate_pixel(c, pix, action);
+void *do_work(void *input) {
+    ThreadArgs args = *(ThreadArgs*)input;
+
+    for(unsigned int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
+        for(unsigned int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
+            double complex c = calculate_complex(x, y, args.resolution, args.region);
+            calculate_pixel(c, &args.pix, args.action);
         }
+    }
+    return NULL;
+}
+
+void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {    
+    unsigned int n_threads = 1;
+    unsigned int steps = resolution.y / n_threads;
+    pthread_t thread_ids[n_threads];
+    ThreadArgs *args[n_threads];
+
+    WorkPart x_y = { .x_start = 0, .x_end = resolution.x, .y_start = 0, .y_end = steps };
+
+    for(unsigned int i = 0; i < n_threads; i++) {
+
+        ThreadArgs *t_args = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+        t_args->resolution = resolution;
+        t_args->region = region;
+        t_args->pix = pix;
+        t_args->action = action;
+        t_args->x_y = x_y;
+
+        args[i] = t_args;
+
+        x_y.y_start = x_y.y_end;
+        x_y.y_end += steps;
+        // multiply by 3 for r,g,b values
+        pix += steps * resolution.x * sizeof(unsigned char) * 3;
+
+        pthread_create(&thread_ids[i], NULL, do_work, (void *) t_args);
+    }
+
+    for(unsigned int i = 0; i < n_threads; i++) {
+        pthread_join(thread_ids[i], NULL);
+    }
+    for(unsigned int i = 0; i < n_threads; i++) {
+        free(args[i]);
     }
 }

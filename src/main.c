@@ -28,10 +28,6 @@ void usage() {
     printf("-o = output file (extension jpg or png will determine output format)\n");
 }
 
-void set_out_file(char* file_name) {
-    strcpy(outfile, file_name);
-}
-
 bool parse_args(int argc, char *argv[]) {
     while ((argc > 1) && (argv[1][0] == '-')){
 		switch (argv[1][1]) {
@@ -40,7 +36,7 @@ bool parse_args(int argc, char *argv[]) {
 				break;
 
 			case 'o':
-                set_out_file(&argv[1][2]);
+                strcpy(outfile, &argv[1][2]);
 				break;
 
             case 'h':
@@ -69,7 +65,7 @@ int main(int argc, char *argv[]) {
     
     Resolution resolution = FULL_HD;
     ColorAction action = SQRT;
-    Region region = REGION_FULL;
+    Region region = REGION_COOL;
 
     struct img_pixmap img;
 

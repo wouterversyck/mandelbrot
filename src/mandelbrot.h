@@ -1,15 +1,6 @@
 #ifndef _MANDELBROT_H
 #define _MANDELBROT_H	1
 
-#include <complex.h>
-
-
-typedef struct color_struct {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} Color;
-
 typedef struct resolution_struct {
     unsigned int x;
     unsigned int y;
@@ -50,8 +41,6 @@ typedef struct configuration {
     ColorAction action;
     unsigned int nthreads;
 } Configuration;
-
-typedef Color (*coloring)(double n, double complex z);
 
 void create_mandelbrot(Configuration configuration);
 

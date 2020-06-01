@@ -1,0 +1,1 @@
+extern const double N;

@@ -7,7 +7,6 @@
 #include "mandelbrot.h"
 
 #define N 1000.0
-#define N_THREADS 4
 
 const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };
@@ -36,15 +35,7 @@ Color get_color(double n, double complex z);
 Color get_color_from_pallete(double n, double complex z);
 Color get_color_continuous(double n, double complex z);
 coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
-
-typedef struct thread_args_struct {
-    Resolution resolution;
-    WorkPart x_y;
-    Region region;
-    unsigned char *pix;
-    ColorAction action;
-} ThreadArgs;
-
+Configuration configuration;
 
 Color hsv_to_rgb(double H, double S, double V) {
     double C = S * V;
@@ -161,48 +152,49 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
 }
 
 void *do_work(void *input) {
-    ThreadArgs args = *(ThreadArgs*)input;
+    WorkPart args = *(WorkPart*)input;
 
-    for(unsigned int y = args.x_y.y_start; y < args.x_y.y_end; y++) {
-        for(unsigned int x = args.x_y.x_start; x < args.x_y.x_end; x++) {
-            double complex c = calculate_complex(x, y, args.resolution, args.region);
-            calculate_pixel(c, &args.pix, args.action);
+    for(unsigned int y = args.y_start; y < args.y_end; y++) {
+        for(unsigned int x = args.x_start; x < args.x_end; x++) {
+            double complex c = calculate_complex(x, y, configuration.resolution, configuration.region);
+            calculate_pixel(c, &args.pix, configuration.action);
         }
     }
     return NULL;
 }
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {    
-    unsigned int n_threads = 1;
-    unsigned int steps = resolution.y / n_threads;
-    pthread_t thread_ids[n_threads];
-    ThreadArgs *args[n_threads];
+void create_mandelbrot(Configuration conf) {
+    configuration = conf;
 
-    WorkPart x_y = { .x_start = 0, .x_end = resolution.x, .y_start = 0, .y_end = steps };
+    unsigned int steps = conf.resolution.y / conf.nthreads;
+    pthread_t thread_ids[conf.nthreads];
+    WorkPart *args[conf.nthreads];
 
-    for(unsigned int i = 0; i < n_threads; i++) {
+    unsigned int x_start = 0, x_end = conf.resolution.x, y_start = 0, y_end = steps;
+    unsigned char* pix = conf.pix;
 
-        ThreadArgs *t_args = (ThreadArgs *)malloc(sizeof(ThreadArgs));
-        t_args->resolution = resolution;
-        t_args->region = region;
-        t_args->pix = pix;
-        t_args->action = action;
-        t_args->x_y = x_y;
+    for(unsigned int i = 0; i < conf.nthreads; i++) {
+        WorkPart *t_arg = (WorkPart *)malloc(sizeof(WorkPart));
+        t_arg->x_start = x_start;
+        t_arg->x_end = x_end;
+        t_arg->y_start = y_start;
+        t_arg->y_end = y_end;
+        t_arg->pix = pix;
 
-        args[i] = t_args;
+        args[i] = t_arg;
 
-        x_y.y_start = x_y.y_end;
-        x_y.y_end += steps;
+        y_start = y_end;
+        y_end += steps;
         // multiply by 3 for r,g,b values
-        pix += steps * resolution.x * sizeof(unsigned char) * 3;
+        pix += steps * conf.resolution.x * sizeof(unsigned char) * 3;
 
-        pthread_create(&thread_ids[i], NULL, do_work, (void *) t_args);
+        pthread_create(&thread_ids[i], NULL, do_work, (void *) t_arg);
     }
 
-    for(unsigned int i = 0; i < n_threads; i++) {
+    for(unsigned int i = 0; i < conf.nthreads; i++) {
         pthread_join(thread_ids[i], NULL);
     }
-    for(unsigned int i = 0; i < n_threads; i++) {
+    for(unsigned int i = 0; i < conf.nthreads; i++) {
         free(args[i]);
     }
 }

@@ -25,6 +25,7 @@ typedef struct work_part_struct {
     unsigned int y_end;
     unsigned int x_start;
     unsigned int x_end;
+    unsigned char *pix;
 } WorkPart;
 
 typedef struct region_struct {
@@ -41,8 +42,17 @@ typedef enum {
     CONTINUOUS
 } ColorAction;
 
+typedef struct configuration {
+    Resolution resolution;
+    WorkPart x_y;
+    Region region;
+    unsigned char *pix;
+    ColorAction action;
+    unsigned int nthreads;
+} Configuration;
+
 typedef Color (*coloring)(double n, double complex z);
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action);
+void create_mandelbrot(Configuration configuration);
 
 #endif /* mandelbrot.h */

@@ -17,14 +17,15 @@ LDLIBS := -limago -lm -lpthread
 DBFLAGS := -g
 
 all: $(EXE)
-debug: CFLAGS += $(DBFLAGS)
-debug: $(EXE)
 
 $(EXE): $(OBJ)
 	$(CC) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+debug: $(SRC_LS)
+	$(CC) $^ $(DBFLAGS) $(CFLAGS) $(LDLIBS) -o debug
 
 .PHONY: valgrind
 valgrind: $(EXE)

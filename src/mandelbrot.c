@@ -172,73 +172,37 @@ void *do_work(void *input) {
     return NULL;
 }
 
-void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {
-    ThreadArgs *args1 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
-    ThreadArgs *args2 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
-    ThreadArgs *args3 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
-    ThreadArgs *args4 = (ThreadArgs *)malloc(sizeof(ThreadArgs));
-    
-    int steps = resolution.y / 4;
+void create_mandelbrot(Resolution resolution, Region region, unsigned char *pix, ColorAction action) {    
+    unsigned int n_threads = 1;
+    unsigned int steps = resolution.y / n_threads;
+    pthread_t thread_ids[n_threads];
+    ThreadArgs *args[n_threads];
 
     WorkPart x_y = { .x_start = 0, .x_end = resolution.x, .y_start = 0, .y_end = steps };
 
-    args1->resolution = resolution;
-    args1->region = region;
-    args1->pix = pix;
-    args1->action = action;
-    args1->x_y = x_y;
-    
+    for(unsigned int i = 0; i < n_threads; i++) {
 
-    x_y.y_start = x_y.y_end + 1;
-    x_y.y_end += steps;
-    // multiply by 3 for r,g,b values
-    pix += steps * resolution.x * sizeof(unsigned char) * 3;
+        ThreadArgs *t_args = (ThreadArgs *)malloc(sizeof(ThreadArgs));
+        t_args->resolution = resolution;
+        t_args->region = region;
+        t_args->pix = pix;
+        t_args->action = action;
+        t_args->x_y = x_y;
 
-    args2->resolution = resolution;
-    args2->region = region;
-    args2->pix = pix;
-    args2->action = action;
-    args2->x_y = x_y;
-    
+        args[i] = t_args;
 
-    x_y.y_start = x_y.y_end + 1;
-    x_y.y_end += steps;
-    pix += (steps -1) * resolution.x * sizeof(unsigned char) * 3;
+        x_y.y_start = x_y.y_end;
+        x_y.y_end += steps;
+        // multiply by 3 for r,g,b values
+        pix += steps * resolution.x * sizeof(unsigned char) * 3;
 
+        pthread_create(&thread_ids[i], NULL, do_work, (void *) t_args);
+    }
 
-    args3->resolution = resolution;
-    args3->region = region;
-    args3->pix = pix;
-    args3->action = action;
-    args3->x_y = x_y;
-
-    x_y.y_start = x_y.y_end + 1;
-    x_y.y_end += steps;
-    pix += (steps - 1) * resolution.x * sizeof(unsigned char) * 3;
-
-    args4->resolution = resolution;
-    args4->region = region;
-    args4->pix = pix;
-    args4->action = action;
-    args4->x_y = x_y;
-
-
-    pthread_t tid1;
-    pthread_create(&tid1, NULL, do_work, (void *)args1);
-    pthread_t tid2;
-    pthread_create(&tid2, NULL, do_work, (void *)args2);
-    pthread_t tid3;
-    pthread_create(&tid3, NULL, do_work, (void *)args3);
-    pthread_t tid4;
-    pthread_create(&tid4, NULL, do_work, (void *)args4);
-
-    pthread_join(tid1, NULL);
-    pthread_join(tid2, NULL);
-    pthread_join(tid3, NULL);
-    pthread_join(tid4, NULL);
-
-    free(args1);
-    free(args2);
-    free(args3);
-    free(args4);
+    for(unsigned int i = 0; i < n_threads; i++) {
+        pthread_join(thread_ids[i], NULL);
+    }
+    for(unsigned int i = 0; i < n_threads; i++) {
+        free(args[i]);
+    }
 }

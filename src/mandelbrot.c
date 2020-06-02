@@ -4,13 +4,12 @@
 
 #include "mandelbrot.h"
 #include "color_utils.h"
-#include "global.h"
 
-double n_iterations = 1000;
-coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
+extern double n_iterations;
+static coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
 Configuration configuration;
 
-void set_and_increment(unsigned char **pix, Color color) {
+static void set_and_increment(unsigned char **pix, Color color) {
     *(*pix)++ = color.r;
     *(*pix)++ = color.g;
     *(*pix)++ = color.b;

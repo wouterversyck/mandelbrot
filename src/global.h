@@ -1,1 +1,0 @@
-extern double n_iterations;

@@ -1,7 +1,8 @@
 #include <complex.h>
 #include <math.h>
 #include "color_utils.h"
-#include "global.h"
+
+extern double n_iterations;
 
 const Color YELLOW_3 = { .r = 255, .g = 170, .b = 0 };
 const Color YELLOW_2 = { .r = 248, .g = 201, .b = 95 };

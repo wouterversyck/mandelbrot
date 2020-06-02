@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <getopt.h>
 
-#include "global.h"
 #include "ptime.h"
 #include "mandelbrot.h"
 
@@ -17,14 +16,22 @@ static const Resolution EIGHT_K = { .x = 7680, .y = 4320 };
 static const Resolution FOUR_K = { .x = 3840, .y = 2160 };
 static const Resolution FULL_HD = { .x = 1920, .y = 1080 };
 
-const Region REGION_FULL = { .y_start = -1.0, .y_end = 1.0, .x_start = -2.5, .x_end = 0.9 };
-const Region REGION_COOL = { .y_start = 0.2305, .y_end = 0.2495, .x_start = -0.738, .x_end = -0.706 };
+static const Resolution resolutions[] = { FULL_HD, FOUR_K, EIGHT_K, ST_K, TT_K };
 
-char outfile[50] = "out.jpg";
-unsigned int n_threads = 0;
-static Resolution resolution = { .x = 1920, .y = 1080 };
+static const Region REGION_FULL = { .y_start = -1.0, .y_end = 1.0, .x_start = -2.5, .x_end = 0.9 };
+static const Region REGION_COOL = { .y_start = 0.2305, .y_end = 0.2495, .x_start = -0.738, .x_end = -0.706 };
 
-void usage() {
+static const Region regions[] = { REGION_FULL, REGION_COOL };
+
+static char outfile[50] = "out.jpg";
+static unsigned int n_threads = 0;
+static Resolution resolution = FULL_HD;
+static Region region = REGION_FULL;
+
+double n_iterations = 1000;
+
+
+static void usage() {
     printf("Arguments:\n");
     printf("-t = number of arguments (defaults to ncpus)\n");
     printf("-o = output file (extension jpg or png will determine output format)\n");
@@ -35,28 +42,32 @@ void usage() {
     printf("     3- 7680x4320\n");
     printf("     4- 15360x1080\n");
     printf("     5- 30720x1080\n");
+    printf("-i = region:\n");
+    printf("     1- full mandelbrot view\n");
+    printf("     2- Super cool region\n");
 }
 
-Resolution get_resolution(unsigned int value) {
-    switch(value) {
-        case 1:
-            return FULL_HD;
-        case 2:
-            return FOUR_K;
-        case 3:
-            return EIGHT_K;
-        case 4:
-            return ST_K;
-        case 5:
-            return TT_K;
-        default:
-            return FULL_HD;
-    }
+static Resolution get_resolution(unsigned int value) {
+    if(value > (sizeof(resolutions) / sizeof(resolution)) - 1) {
+        printf("Value for resolution %d is out of range, will use full hd\n\n", value);
+        return FULL_HD;
+    } 
+
+    return resolutions[value];
 }
 
-bool parse_args(int argc, char **argv) {
+static Region get_region(unsigned int value) {
+    if(value > (sizeof(regions) / sizeof(region)) - 1) {
+        printf("Value for reigon %d is out of range, will use super cool region\n\n", value);
+        return REGION_FULL;
+    } 
+
+    return regions[value];
+}
+
+static bool parse_args(int argc, char **argv) {
     int c;
-    while ((c = getopt(argc, argv, "o:t:n:r:h")) != -1) {
+    while ((c = getopt(argc, argv, "o:t:n:r:i:h")) != -1) {
 		switch (c) {
 			case 't':
                 n_threads = strtol(optarg, NULL, 10);
@@ -68,7 +79,10 @@ bool parse_args(int argc, char **argv) {
                 n_iterations = strtol(optarg, NULL, 10);
                 break;
             case 'r':
-                resolution = get_resolution(strtol(optarg, NULL, 10));
+                resolution = get_resolution(strtol(optarg, NULL, 10) -1);
+                break;
+            case 'i':
+                region = get_region(strtol(optarg, NULL, 10) -1);
                 break;
             case 'h':
 				usage();
@@ -83,6 +97,7 @@ bool parse_args(int argc, char **argv) {
     printf("----------------------------------------------------\n");
     printf("Number of iterations:\t%f\n", n_iterations);
     printf("Number of threads:\t%d\n", n_threads);
+    printf("Resolution of image:\t%dx%d\n", resolution.x, resolution.y);
     printf("Saving output to:\t%s\n", outfile);
     printf("----------------------------------------------------\n\n");
 
@@ -94,9 +109,7 @@ int main(int argc, char **argv) {
         return 0;
     }
     
-    
     ColorAction action = SQRT;
-    Region region = REGION_FULL;
 
     struct img_pixmap img;
 

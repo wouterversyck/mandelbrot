@@ -1,1 +1,1 @@
-extern const double N;
+extern double n_iterations;

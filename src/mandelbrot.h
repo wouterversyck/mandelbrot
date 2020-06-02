@@ -39,7 +39,7 @@ typedef struct configuration {
     Region region;
     unsigned char *pix;
     ColorAction action;
-    unsigned int nthreads;
+    unsigned int n_threads;
 } Configuration;
 
 void create_mandelbrot(Configuration configuration);

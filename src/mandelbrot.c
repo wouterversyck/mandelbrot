@@ -6,8 +6,7 @@
 #include "color_utils.h"
 #include "global.h"
 
-const double N = 1000.0;
-
+double n_iterations = 1000;
 coloring funcs[] = { &get_color_sqrt, &get_color, &get_color_from_pallete, &get_color_continuous };
 Configuration configuration;
 
@@ -26,7 +25,7 @@ void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_ac
     double complex z = 0.0;
     int number_of_iterations = 0;
 
-    for(int n = 0; n < N; n++) {
+    for(int n = 0; n < n_iterations; n++) {
         if(cabs(z) > 2) {
             Color c = funcs[color_action](n, z);
             set_and_increment(pix, c);
@@ -36,7 +35,7 @@ void calculate_pixel(double complex c, unsigned char **pix, ColorAction color_ac
         number_of_iterations++;
         z = z * z + c;
     }
-    if(number_of_iterations == N) {
+    if(number_of_iterations == n_iterations) {
         set_black_and_increment(pix);
     }
 }
@@ -62,14 +61,14 @@ void *do_work(void *input) {
 void create_mandelbrot(Configuration conf) {
     configuration = conf;
 
-    unsigned int steps = conf.resolution.y / conf.nthreads;
-    pthread_t thread_ids[conf.nthreads];
-    WorkPart *args[conf.nthreads];
+    unsigned int steps = conf.resolution.y / conf.n_threads;
+    pthread_t thread_ids[conf.n_threads];
+    WorkPart *args[conf.n_threads];
 
     unsigned int x_start = 0, x_end = conf.resolution.x, y_start = 0, y_end = steps;
     unsigned char* pix = conf.pix;
 
-    for(unsigned int i = 0; i < conf.nthreads; i++) {
+    for(unsigned int i = 0; i < conf.n_threads; i++) {
         WorkPart *t_arg = (WorkPart *)malloc(sizeof(WorkPart));
         t_arg->x_start = x_start;
         t_arg->x_end = x_end;
@@ -87,10 +86,10 @@ void create_mandelbrot(Configuration conf) {
         pthread_create(&thread_ids[i], NULL, do_work, (void *) t_arg);
     }
 
-    for(unsigned int i = 0; i < conf.nthreads; i++) {
+    for(unsigned int i = 0; i < conf.n_threads; i++) {
         pthread_join(thread_ids[i], NULL);
     }
-    for(unsigned int i = 0; i < conf.nthreads; i++) {
+    for(unsigned int i = 0; i < conf.n_threads; i++) {
         free(args[i]);
     }
 }

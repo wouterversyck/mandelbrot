@@ -78,7 +78,7 @@ Color hsv_to_rgb(double H, double S, double V) {
 Color get_color_sqrt(double n, double complex z) {
     (void) z; /* unused */
     n = n + 1 - log(log2(cabs(z)));
-    n = sqrt(n / N);
+    n = sqrt(n / n_iterations);
     return hsv_to_rgb(360 * n, 1, 1);
 }
 
@@ -95,7 +95,7 @@ Color get_color_continuous(double n, double complex z) {
 
 Color get_color(double n, double complex z) {
     (void) z; /* unused */
-    return hsv_to_rgb(360 * n / N, 1, 1);
+    return hsv_to_rgb(360 * n / n_iterations, 1, 1);
 }
 
 Color get_color_from_pallete(double n, double complex z) {

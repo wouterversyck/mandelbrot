@@ -9,11 +9,11 @@ void print_time() {
 }
 
 void print_start() {
-    printf("Starting at: ");
+    printf("Starting at:\t");
     print_time();
 }
 
 void print_end() {
-    printf("Ending at: ");
+    printf("Ending at:\t");
     print_time();
 }

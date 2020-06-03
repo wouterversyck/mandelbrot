@@ -46,6 +46,8 @@ double complex calculate_complex(double x, double y, Resolution resolution, Regi
 }
 
 void *do_work(void *input) {
+    printf("Started work on thread %ld\n", pthread_self());
+    
     WorkPart args = *(WorkPart*)input;
 
     for(unsigned int y = args.y_start; y < args.y_end; y++) {
@@ -54,6 +56,8 @@ void *do_work(void *input) {
             calculate_pixel(c, &args.pix, configuration.action);
         }
     }
+    
+    printf("Finished work on thread %ld\n", pthread_self());
     return NULL;
 }
 

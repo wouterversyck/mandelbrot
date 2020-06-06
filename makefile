@@ -12,7 +12,7 @@ TEST_LS := $(shell ls -d tests/*)
 SRC := $(wildcard $(SRC_DIR)/*)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS := -Wall -Werror -Wextra
+CFLAGS := -Wall -Werror -Wextra -pedantic
 LDLIBS := -limago -lm -lpthread
 DBFLAGS := -g
 
